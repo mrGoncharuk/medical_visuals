@@ -46,9 +46,14 @@ using namespace gl;
 # include <iostream>
 # include <imebra/imebra.h>
 # include <stdio.h>
+# include <map>
+# include <utils.h>
 
-# define IMG_W 500
-# define IMG_H 500
+
+# define SCREEN_WIDTH 1000
+# define SCREEN_HEIGHT 1000
+// # define IMG_W 1000
+// # define IMG_H 1000
 
 
 class GUI
@@ -58,7 +63,7 @@ private:
 	ImVec4 				clearColor;
 	GLuint 				my_image_texture;
 	imebra::DataSet 	loadedDataSet;
-
+	std::map<GLuint, size_t> lines;
 public:
 	GUI();
 	~GUI();
@@ -67,10 +72,14 @@ public:
 
 	GLFWwindow		*getWindow();
 
+	bool			initGL();
 	void			mainloop();
 	void			events(std::atomic<bool>&);
 	void			update();
 	void			render();
+	void    		initLines();
+	void			addLine(int x0, int y0, int x1, int y1);
+	void			toCylindric(int x0, int y0, int x1, int y1);
 
 	
 };

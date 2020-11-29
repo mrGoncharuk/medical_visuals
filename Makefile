@@ -20,7 +20,10 @@ OBJ_DIR = obj/
 SRC_DIR = src/
 NAME = MedicalVisuals
 SRC = 	main.cpp \
-		GUI.cpp 
+		GUI.cpp \
+		utils.cpp \
+		draw_line.cpp \
+		cylindric.cpp
 
 
 SOURCES = $(addprefix $(SRC_DIR), $(SRC))
