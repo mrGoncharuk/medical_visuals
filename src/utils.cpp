@@ -84,7 +84,7 @@ GLfloat *normalize_coordinates(const std::vector<float> &buf)
     {
         // vertices_position[i] = buf[i];
         // vertices_position[i + 1] = buf[i + 1];
-        vertices_position[i] = buf[i]/ SCREEN_WIDTH;
+        vertices_position[i] = buf[i] / SCREEN_WIDTH;
         vertices_position[i + 1] = buf[i + 1] / SCREEN_HEIGHT;
         // vertices_position[i] = (buf[i] - SCREEN_WIDTH / 2) / SCREEN_WIDTH;
         // vertices_position[i + 1] = (buf[i + 1] - SCREEN_HEIGHT / 2) / SCREEN_HEIGHT;

@@ -82,7 +82,7 @@ void		ft_draw_line(std::vector<float> &buf, int x0, int y0, int x1, int y1)
     // Selecting way of moving
 	if (abs(y1 - y0) < abs(x1 - x0))
 	{
-        // Swaping pointd coordinats to iterate from the beggining of coordinates
+        // Swaping points coordinats to iterate from the beggining of coordinat system
 		if (x0 > x1)
 			ft_draw_low_line(buf, x1, y1, x0, y0);
 		else
@@ -90,7 +90,7 @@ void		ft_draw_line(std::vector<float> &buf, int x0, int y0, int x1, int y1)
 	}
 	else
 	{
-        // Swaping pointd coordinats to iterate from the beggining of coordinates
+        // Swaping points coordinats to iterate from the beggining of coordinat system
 		if (y0 > y1)
 			ft_draw_high_line(buf, x1, y1, x0, y0);
 		else

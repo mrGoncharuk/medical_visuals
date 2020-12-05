@@ -165,7 +165,7 @@ void	GUI::toCylindric(int x0, int y0, int x1, int y1)
         // x = r * cos(f);
         // y = r * sin(f);
         *i = r;
-        *(i + 1) = f * SCREEN_HEIGHT;
+        *(i + 1) = f;
         std::cout << "(" << r << "; " << f << ")" << std::endl;
     }
     initialize(vao, buf);
@@ -195,7 +195,9 @@ void LoadTextureFromArray(char *pixels, GLuint* out_texture, int image_width, in
     // Upload pixels into texture
     // glPixelStorei( GL_UNPACK_ALIGNMENT, 0 );
     glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, image_width, image_height, 0, GL_DEPTH_COMPONENT , GL_UNSIGNED_BYTE, pixels);
+    GLint swizzleMask[] = {GL_RED, GL_RED, GL_RED, GL_RED};
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, image_width, image_height, 0, GL_RED , GL_UNSIGNED_BYTE, pixels);
     *out_texture = image_texture;
     
 }
@@ -298,6 +300,7 @@ void	GUI::render()
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+    // glMatrixMode(GL_PROJECTION)
     glClear(GL_COLOR_BUFFER_BIT);
     for (auto i = lines.begin(); i != lines.end(); i++)
     {

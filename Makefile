@@ -22,8 +22,7 @@ NAME = MedicalVisuals
 SRC = 	main.cpp \
 		GUI.cpp \
 		utils.cpp \
-		draw_line.cpp \
-		cylindric.cpp
+		draw_line.cpp 
 
 
 SOURCES = $(addprefix $(SRC_DIR), $(SRC))
