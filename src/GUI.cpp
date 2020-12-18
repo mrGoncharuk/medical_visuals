@@ -285,7 +285,7 @@ void	GUI::update()
             ImGui::Text("size = %d x %d", image.getWidth(), image.getHeight());
             ImGui::Text("Manufacturer: %s", manufacturer.c_str());
         }
-        ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(500, 500));
+        ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(image.getWidth(), image.getHeight()));
         ImGui::End();
     }
 }

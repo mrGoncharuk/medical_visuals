@@ -47,13 +47,8 @@ using namespace gl;
 # include <imebra/imebra.h>
 # include <stdio.h>
 # include <map>
-# include <utils.h>
+# include "utils.h"
 
-
-# define SCREEN_WIDTH 1000
-# define SCREEN_HEIGHT 1000
-// # define IMG_W 1000
-// # define IMG_H 1000
 
 
 class GUI

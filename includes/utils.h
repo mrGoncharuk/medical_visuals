@@ -7,8 +7,8 @@
 #include <iostream>
 #include <cmath>
 
-const int SCREEN_WIDTH = 1000;
-const int SCREEN_HEIGHT = 1000;
+# define SCREEN_WIDTH 500
+# define SCREEN_HEIGHT 500
 
 void    read_shader_src(const char *fname, std::vector<char> &buffer);
 void		ft_draw_line(std::vector<float> &buf, int x0, int y0, int x1, int y1);
