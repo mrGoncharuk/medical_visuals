@@ -8,7 +8,6 @@ int		main(int argc, char **argv)
 	isRunning = true;
 	if (gui.initGL() == false)
 		isRunning = false;
-	gui.initLines();
 	while (isRunning)
 	{
 		gui.events(isRunning);

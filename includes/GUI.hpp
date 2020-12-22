@@ -57,8 +57,10 @@ private:
 	GLFWwindow			*window;
 	ImVec4 				clearColor;
 	GLuint 				my_image_texture;
-	imebra::DataSet 	loadedDataSet;
+	imebra::DataSet 	*loadedDataSet;
 	std::map<GLuint, size_t> lines;
+	int min_pixel;
+	int max_pixel;
 public:
 	GUI();
 	~GUI();
@@ -75,7 +77,7 @@ public:
 	void    		initLines();
 	void			addLine(int x0, int y0, int x1, int y1);
 	void			toCylindric(int x0, int y0, int x1, int y1);
-
+	void    		print_tag_info(imebra::TagId tag);
 	
 };
 

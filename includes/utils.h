@@ -10,8 +10,9 @@
 # define SCREEN_WIDTH 500
 # define SCREEN_HEIGHT 500
 
-void    read_shader_src(const char *fname, std::vector<char> &buffer);
-void		ft_draw_line(std::vector<float> &buf, int x0, int y0, int x1, int y1);
-void initialize(GLuint &vao, const std::vector<float> &buf);
-void ft_draw_cylindic_line(std::vector<float> &buf);
-void display(GLuint vao, int size);
+
+void    LoadTextureFromArray(char *pixels, GLuint* out_texture, int image_width, int image_height);
+
+void    min_max_pixel(char *data, size_t size, int *min, int *max);
+
+void    transform_image(char *image_data, const size_t size, float slope, float intercept, int max, int min);
