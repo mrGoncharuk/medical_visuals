@@ -1,8 +1,10 @@
-#version 330 core
+#version 150
 
-
-in vec2 position;
+in vec4 position;
+in vec2 texture_coord;
+out vec2 texture_coord_from_vshader;
 
 void main() {
-	gl_Position = vec4(position.x, position.y, 1.0, 1.0);
+	gl_Position = position;
+	texture_coord_from_vshader = texture_coord;
 }

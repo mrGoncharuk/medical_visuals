@@ -73,8 +73,7 @@ public:
 	void			update();
 	void			render();
 	void    		initLines();
-	void			addLine(int x0, int y0, int x1, int y1);
-	void			toCylindric(int x0, int y0, int x1, int y1);
+
 
 	
 };

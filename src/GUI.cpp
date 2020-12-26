@@ -32,18 +32,29 @@ GUI::~GUI()
 
 void    GUI::initLines()
 {
-    GLuint vao;
-    std::vector<float> buf;
+    		// The fullscreen quad's FBO
+	// GLuint quad_VertexArrayID;
+	// glGenVertexArrays(1, &quad_VertexArrayID);
+	// glBindVertexArray(quad_VertexArrayID);
 
-    // Initialize the data to be rendered
-	ft_draw_line(buf, 0, -SCREEN_HEIGHT, 0, SCREEN_HEIGHT);
-    // ft_draw_line(buf, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	initialize(vao, buf);
-    lines.insert(std::pair<GLuint, size_t>(vao, buf.size() / 2));
+	// static const GLfloat g_quad_vertex_buffer_data[] = {
+	// 	-1.0f, -1.0f, 0.0f,
+	// 	1.0f, -1.0f, 0.0f,
+	// 	-1.0f,  1.0f, 0.0f,
+	// 	-1.0f,  1.0f, 0.0f,
+	// 	1.0f, -1.0f, 0.0f,
+	// 	1.0f,  1.0f, 0.0f,
+	// };
 
-	ft_draw_line(buf, -SCREEN_WIDTH, 0, SCREEN_WIDTH, 0);
-    initialize(vao, buf);
-    lines.insert(std::pair<GLuint, size_t>(vao, buf.size() / 2));
+	// GLuint quad_vertexbuffer;
+	// glGenBuffers(1, &quad_vertexbuffer);
+	// glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+	// // Create and compile our GLSL program from the shaders
+	// GLuint quad_programID = create_program( "shaders/passthrough.vert.shader", "shaders/texture.frag.shader" );
+	// GLuint texID = glGetUniformLocation(quad_programID, "renderedTexture");
+	// GLuint timeID = glGetUniformLocation(quad_programID, "time");
 }
 
 
@@ -131,46 +142,8 @@ bool GUI::initGL()
 
 
 
-void    GUI::addLine(int x0, int y0, int x1, int y1)
-{
-    if (lines.size() > 2)
-        lines.erase(prev(lines.end()));
-    GLuint vao;
-    std::vector<float> buf;
 
-    // Initialize the data to be rendered
-	ft_draw_line(buf, x0, y0, x1, y1);
-    // ft_draw_line(buf, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-	initialize(vao, buf);
-    lines.insert(std::pair<GLuint, size_t>(vao, buf.size() / 2));
-}
 
-void	GUI::toCylindric(int x0, int y0, int x1, int y1)
-{
-    if (lines.size() > 2)
-        lines.erase(prev(lines.end()));
-    GLuint vao;
-    std::vector<float> buf;
-
-    // Initialize the data to be rendered
-	ft_draw_line(buf, x0, y0, x1, y1);
-    float   r, f, x, y, xc, yc;
-
-    for (auto i = buf.begin(); i != buf.end(); i += 2)
-    {
-        x = *i;
-        y = *(i + 1);
-        r = sqrt(x*x + y*y);
-        f = atan(y / x);
-        // x = r * cos(f);
-        // y = r * sin(f);
-        *i = r;
-        *(i + 1) = f;
-        std::cout << "(" << r << "; " << f << ")" << std::endl;
-    }
-    initialize(vao, buf);
-    lines.insert(std::pair<GLuint, size_t>(vao, buf.size() / 2));
-}
 
 
 void    GUI::events(std::atomic<bool> &isRunning)
@@ -181,25 +154,43 @@ void    GUI::events(std::atomic<bool> &isRunning)
 
 }
 
-void LoadTextureFromArray(char *pixels, GLuint* out_texture, int image_width, int image_height)
+bool LoadTextureFromArray(char *pixels, GLuint* out_texture, int image_width, int image_height)
 {
-    // Create a OpenGL texture identifier
+    GLuint FramebufferName = 0;
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+    *out_texture = FramebufferName;
+
+    // The texture we're going to render to
     GLuint image_texture;
     glGenTextures(1, &image_texture);
+
+    // "Bind" the newly created texture : all future texture functions will modify this texture
     glBindTexture(GL_TEXTURE_2D, image_texture);
 
-    // Setup filtering parameters for display
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Give an empty image to OpenGL ( the last "0" )
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1024, 768, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-    // Upload pixels into texture
-    // glPixelStorei( GL_UNPACK_ALIGNMENT, 0 );
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    GLint swizzleMask[] = {GL_RED, GL_RED, GL_RED, GL_RED};
-    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, image_width, image_height, 0, GL_RED , GL_UNSIGNED_BYTE, pixels);
-    *out_texture = image_texture;
+    // Poor filtering. Needed !
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    GLuint depthrenderbuffer;
+    glGenRenderbuffers(1, &depthrenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+    // Set "renderedTexture" as our colour attachement #0
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, image_texture, 0);
+
+    // Set the list of draw buffers.
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
     
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        return false;
+    return true;
 }
 
 
@@ -226,10 +217,6 @@ void	GUI::update()
         ImGui::InputInt("y1", &y1);
         ImGui::InputInt("x2", &x2);
         ImGui::InputInt("y2", &y2);
-        if (ImGui::Button("Draw Line"))
-            addLine(x1, y1, x2, y2);
-        if (ImGui::Button("To Cylindic"))
-            toCylindric(x1, y1, x2, y2);
         // ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(500, 500));
         ImGui::End();
     }
@@ -240,76 +227,34 @@ void	GUI::update()
 
     if (!isProcessed)
     {
-        // Get the color space
-        std::string colorSpace = image.getColorSpace();
 
-        // Get the size in pixels
         std::uint32_t width = image.getWidth();
         std::uint32_t height = image.getHeight();
-        std::cout << "Color Space: " << colorSpace << std::endl;
-        std::cout << "Image Width: " << width << std::endl;
-        std::cout << "Image Height: " << height << std::endl;
-        std::cout << "Number of color channels:  " << image.getChannelsNumber() << std::endl;
-        std::cout << "Pixel size:  " << (int)image.getDepth() << std::endl;
-        
         image_data = new char[width * height];
-        std:: cout << "Ret: " << image.getReadingDataHandler().data(image_data, width * height) << std::endl;
-        LoadTextureFromArray(image_data, &this->my_image_texture, width, height);
-        isProcessed = true;
+        image.getReadingDataHandler().data(image_data, width * height);
+        if (isProcessed = LoadTextureFromArray(image_data, &this->my_image_texture, width, height))
+            std::cout << "Result: " << isProcessed << std::endl;
         delete []image_data;
     }
     
-    {
-        ImGui::Begin("Image Data");
-        static bool showData = true;
-        static std::string manufacturer;
-        if (manufacturer.empty())
-        {
-            imebra::tagsIds_t tags = loadedDataSet.getTags();
-            for (auto i = tags.begin(); i != tags.end(); i++)
-            {
-                if (imebra::DicomDictionary::getTagDescription(*i) == "Manufacturer")
-                {
-                    std::cout << "TagID: " << i->getTagId() << std::endl;
-                    std::cout << "TagDescription: " << imebra::DicomDictionary::getTagDescription(*i) << std::endl;
-                    std::cout << "Data type: " << loadedDataSet.getString(*i, 0) << std::endl;
-                    manufacturer = loadedDataSet.getString(*i, 0);
-                }
-                // std::cout << "TagID: " << imebra::DicomDictionary::getTagDescription(*i) << std::endl;
-            }
-        }
-        ImGui::Checkbox("Show data", &showData);
-        if (showData)
-        {
-            ImGui::Text("Color space: %s", image.getColorSpace().c_str());
-            ImGui::Text("size = %d x %d", image.getWidth(), image.getHeight());
-            ImGui::Text("Manufacturer: %s", manufacturer.c_str());
-        }
-        ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(image.getWidth(), image.getHeight()));
-        ImGui::End();
-    }
+
 }
 
 
 
 void	GUI::render()
 {
-                
+    glBindFramebuffer(GL_FRAMEBUFFER, this->my_image_texture);
+    glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right  
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
+    // glBindFramebuffer(GL_FRAMEBUFFER, this->my_image_texture);
     glViewport(0, 0, display_w, display_h);
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     // glMatrixMode(GL_PROJECTION)
     glClear(GL_COLOR_BUFFER_BIT);
-    for (auto i = lines.begin(); i != lines.end(); i++)
-    {
-        display(i->first, i->second);
-    }
-    // display(lines., vao_vertecies);
-    // display(vao2, vao2_vertecies);
-    // display(vao_cyl, vao_cyl_vertecies);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwSwapBuffers(window);
