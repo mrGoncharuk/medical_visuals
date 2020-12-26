@@ -217,6 +217,9 @@ void	GUI::update()
         ImGui::InputInt("y1", &y1);
         ImGui::InputInt("x2", &x2);
         ImGui::InputInt("y2", &y2);
+        ImVec2 pos = ImGui::GetMousePos();
+        ImGui::Text("x = %f", pos.x);
+        ImGui::Text("y = %f", pos.y);
         // ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(500, 500));
         ImGui::End();
     }
@@ -225,17 +228,17 @@ void	GUI::update()
     static bool isProcessed = false;
     static char *image_data = NULL;
 
-    if (!isProcessed)
-    {
+    // if (!isProcessed)
+    // {
 
-        std::uint32_t width = image.getWidth();
-        std::uint32_t height = image.getHeight();
-        image_data = new char[width * height];
-        image.getReadingDataHandler().data(image_data, width * height);
-        if (isProcessed = LoadTextureFromArray(image_data, &this->my_image_texture, width, height))
-            std::cout << "Result: " << isProcessed << std::endl;
-        delete []image_data;
-    }
+    //     std::uint32_t width = image.getWidth();
+    //     std::uint32_t height = image.getHeight();
+    //     image_data = new char[width * height];
+    //     image.getReadingDataHandler().data(image_data, width * height);
+    //     if (isProcessed = LoadTextureFromArray(image_data, &this->my_image_texture, width, height))
+    //         std::cout << "Result: " << isProcessed << std::endl;
+    //     delete []image_data;
+    // }
     
 
 }

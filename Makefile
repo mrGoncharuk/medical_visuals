@@ -34,9 +34,9 @@ SOURCES += 	$(IMGUI_DIR)imgui.cpp \
 OBJS = $(addprefix $(OBJ_DIR), $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 UNAME_S := $(shell uname -s)
 
-CXXFLAGS = -I$(IMPL_DIR) -I$(IMGUI_DIR) -Iincludes/ -Iimebra_src/library/include/ -I/usr/include/freetype2
+CXXFLAGS = -I/usr/include/freetype2 -I$(IMPL_DIR) -I$(IMGUI_DIR) -Iincludes/ -Iimebra_src/library/include/ 
 CXXFLAGS += -g
-LIBS = -lpthread -lm -limebra
+LIBS = -lpthread -lm -limebra -lfreetype 
 ##---------------------------------------------------------------------
 ## OPENGL LOADER
 ##---------------------------------------------------------------------

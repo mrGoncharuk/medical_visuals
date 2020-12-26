@@ -1,326 +1,411 @@
 #include "GUI.hpp"
 
-// #include <GL/glew.h>
-
-#include <cstdlib>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <ft2build.h>
-//#include <ctime>
-
-static void glfw_error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
-}
-
-// Called for keyboard events
-void keyboard(int key, int action);
-
-// Render scene
-void display(GLuint &vao, GLFWwindow *window);
-
-// Initialize the data to be rendered
-void initialize(GLuint &vao);
-
-// Load an image from the disk with FreeImage
-void load_image(const char *fname);
-
-int main () {
-
-    glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-    {
-        std::cerr << "ERROR: Failed initialization of GLFW" << std::endl;
-        exit(-1);
-    }
-
-	// Use OpenGL 3.2 core profile
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+// #include <cstdlib>
+// #include <iostream>
+// #include <fstream>
+// #include <vector>
+// #include <ft2build.h>
+// #include <glm/glm.hpp>
+// #include <glm/gtc/matrix_transform.hpp>
+// #include <glm/gtc/type_ptr.hpp>
+// #include FT_FREETYPE_H
 
 
-    // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "MedicalVisuals", NULL, NULL);
-    if (window == NULL)
-    {
-        std::cerr << "ERROR: Failed creation of window" << std::endl;
-        exit(-1);
-    }
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(1); // Enable vsync
-
-    // Initialize OpenGL loader
-#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-    bool err = gl3wInit() != 0;
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-    bool err = glewInit() != GLEW_OK;
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
-    bool err = gladLoadGL() == 0;
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD2)
-    bool err = gladLoadGL(glfwGetProcAddress) == 0; // glad2 recommend using the windowing library loader instead of the (optionally) bundled one.
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLBINDING2)
-    bool err = false;
-    glbinding::Binding::initialize();
-#elif defined(IMGUI_IMPL_OPENGL_LOADER_GLBINDING3)
-    bool err = false;
-    glbinding::initialize([](const char* name) { return (glbinding::ProcAddress)glfwGetProcAddress(name); });
-#else
-    bool err = false; // If you use IMGUI_IMPL_OPENGL_LOADER_CUSTOM, your loader is likely to requires some form of initialization.
-#endif
-    if (err)
-    {
-        std::cerr << "Failed to initialize OpenGL loader" << std::endl;
-        exit(-1);
-    }
+// // settings
+// const unsigned int SCR_WIDTH = 800;
+// const unsigned int SCR_HEIGHT = 600;
 
 
 
-	// Create a vertex array object
-	GLuint vao;
+// /// Holds all state information relevant to a character as loaded using FreeType
+// struct Character {
+//     unsigned int TextureID; // ID handle of the glyph texture
+//     glm::ivec2   Size;      // Size of glyph
+//     glm::ivec2   Bearing;   // Offset from baseline to left/top of glyph
+//     unsigned int Advance;   // Horizontal offset to advance to next glyph
+// };
 
-	// Initialize the data to be rendered
-	initialize(vao);
+// std::map<GLchar, Character> Characters;
+// unsigned int VAO, VBO;
 
-	// Create a rendering loop
-	bool running = true;
 
-	while(running) {
-		// Display scene
-		display(vao, window);
+// static void glfw_error_callback(int error, const char* description)
+// {
+//     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+// }
 
-		glfwPollEvents();
-		if (glfwWindowShouldClose(window))
-			running = false;
-		// Check if the window was closed
+// void RenderText(GLuint &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
-	}
+// // Called for keyboard events
+// void keyboard(int key, int action);
 
-	// Terminate GLFW
-	glfwTerminate();
+// // Render scene
+// void display(GLuint &vao, GLFWwindow *window);
 
-	return 0;
-}
+// // Initialize the data to be rendered
+// GLuint initialize(GLuint &vao, GLuint &vbo, GLuint &texture);
 
-// Render scene
-void display(GLuint &vao, GLFWwindow *window) {
-	glClear(GL_COLOR_BUFFER_BIT);
+// // Load an image from the disk with FreeImage
+// void load_image(const char *fname);
 
-	glBindVertexArray(vao);
-	glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+// void displayImage(GLuint &img_shader, GLuint &vao, GLuint &vbo, GLuint &texture,  GLFWwindow *window);
 
-	// Swap front and back buffers
-	glfwSwapBuffers(window);
-}
+// int main () {
 
-void initialize(GLuint &vao) {
-	// Use a Vertex Array Object
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+//     glfwSetErrorCallback(glfw_error_callback);
+//     if (!glfwInit())
+//     {
+//         std::cerr << "ERROR: Failed initialization of GLFW" << std::endl;
+//         exit(-1);
+//     }
 
-	// 1 square (made by 2 triangles) to be rendered
-	GLfloat vertices_position[8] = {
-		-1.0, 0.0,
-		0.0, 0.0,
-		0.0, 1.0,
-		-1.0, 1.0,
+// 	// Use OpenGL 3.2 core profile
+//     const char* glsl_version = "#version 150";
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+//     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+
+
+//     // Create window with graphics context
+//     GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "MedicalVisuals", NULL, NULL);
+//     if (window == NULL)
+//     {
+//         std::cerr << "ERROR: Failed creation of window" << std::endl;
+//         glfwTerminate();
+//         exit(-1);
+//     }
+//     glfwMakeContextCurrent(window);
+//     glfwSwapInterval(1); // Enable vsync
+
+
+//     bool err = gl3wInit() != 0;
+//     if (err)
+//     {
+//         std::cerr << "Failed to initialize OpenGL loader" << std::endl;
+//         exit(-1);
+//     }
+
+
+//     glEnable(GL_CULL_FACE);
+//     glEnable(GL_BLEND);
+//     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+// 	// Create a vertex array object
+
+
+
+    
+//     GLuint shaderProgram = create_program("shaders/text.vertex.shader", "shaders/text.fragment.shader");
+//     glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(SCR_WIDTH), 0.0f, static_cast<float>(SCR_HEIGHT));
+//     glUseProgram(shaderProgram);
+//     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+//     // FreeType
+//     // --------
+//     FT_Library ft;
+//     // All functions return a value different than 0 whenever an error occurred
+//     if (FT_Init_FreeType(&ft))
+//     {
+//         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+//         return -1;
+//     }
+
+// 	// find path to font
+//     std::string font_name = "fonts/open-sans/OpenSans-Bold.ttf";
+//     if (font_name.empty())
+//     {
+//         std::cout << "ERROR::FREETYPE: Failed to load font_name" << std::endl;
+//         return -1;
+//     }
+	
+// 	// load font as face
+//     FT_Face face;
+//     if (FT_New_Face(ft, font_name.c_str(), 0, &face)) {
+//         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+//         return -1;
+//     }
+//     else {
+//         // set size to load glyphs as
+//         FT_Set_Pixel_Sizes(face, 0, 48);
+
+//         // disable byte-alignment restriction
+//         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+//         // load first 128 characters of ASCII set
+//         for (unsigned char c = 0; c < 128; c++)
+//         {
+//             // Load character glyph 
+//             if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+//             {
+//                 std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+//                 continue;
+//             }
+//             // generate texture
+//             unsigned int texture;
+//             glGenTextures(1, &texture);
+//             glBindTexture(GL_TEXTURE_2D, texture);
+//             glTexImage2D(
+//                 GL_TEXTURE_2D,
+//                 0,
+//                 GL_RED,
+//                 face->glyph->bitmap.width,
+//                 face->glyph->bitmap.rows,
+//                 0,
+//                 GL_RED,
+//                 GL_UNSIGNED_BYTE,
+//                 face->glyph->bitmap.buffer
+//             );
+//             // set texture options
+//             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//             // now store character for later use
+//             Character character = {
+//                 texture,
+//                 glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+//                 glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+//                 static_cast<unsigned int>(face->glyph->advance.x)
+//             };
+//             Characters.insert(std::pair<char, Character>(c, character));
+//         }
+//         glBindTexture(GL_TEXTURE_2D, 0);
+//     }
+//     // destroy FreeType once we're finished
+//     FT_Done_Face(face);
+//     FT_Done_FreeType(ft);
+
+    
+//     // configure VAO/VBO for texture quads
+//     // -----------------------------------
+//     glGenVertexArrays(1, &VAO);
+//     glGenBuffers(1, &VBO);
+//     glBindVertexArray(VAO);
+//     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+//     glEnableVertexAttribArray(0);
+//     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+//     glBindBuffer(GL_ARRAY_BUFFER, 0);
+//     glBindVertexArray(0);
+
+	
+// 	GLuint vao, vbo, img_texture;
+
+// 	// Initialize the data to be rendered
+// 	GLuint img_shader = initialize(vao, vbo, img_texture);
+
+// 	// Create a rendering loop
+// 	bool running = true;
+
+// 	while(running) {
+
+// 		// Display scene
+//         glClear(GL_COLOR_BUFFER_BIT);
+//         displayImage(img_shader, vao, vbo, img_texture, window);
+//         RenderText(shaderProgram, "A", 200.0f, 550.0f, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+//         RenderText(shaderProgram, "L", 0.0f, 420.0f, 1.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        
+
+// 		glfwSwapBuffers(window);
+//         glfwPollEvents();
+// 		if (glfwWindowShouldClose(window))
+// 			running = false;
+// 		// Check if the window was closed
+
+// 	}
+
+// 	// Terminate GLFW
+// 	glfwTerminate();
+
+// 	return 0;
+// }
+
+
+// // Render scene
+// void displayImage(GLuint &img_shader, GLuint &vao, GLuint &vbo, GLuint &texture, GLFWwindow *window) {
+
+//     glUseProgram(img_shader);
+//     // glActiveTexture(GL_TEXTURE0);
+//     glBindVertexArray(vao);
+//     glBindTexture(GL_TEXTURE_2D, texture);
+//     glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+//     glDrawElements( GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+// }
+
+
+// void RenderText(GLuint &shaderProgram, std::string text, float x, float y, float scale, glm::vec3 color)
+// {
+//     // activate corresponding render state	
+    
+//     glUseProgram(shaderProgram);
+//     glUniform3f(glGetUniformLocation(shaderProgram, "textColor"), color.x, color.y, color.z);
+//     glActiveTexture(GL_TEXTURE0);
+//     glBindVertexArray(VAO);
+
+//     // iterate through all characters
+//     std::string::const_iterator c;
+//     for (c = text.begin(); c != text.end(); c++) 
+//     {
+//         Character ch = Characters[*c];
+
+//         float xpos = x + ch.Bearing.x * scale;
+//         float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+//         float w = ch.Size.x * scale;
+//         float h = ch.Size.y * scale;
+//         // update VBO for each character
+//         float vertices[6][4] = {
+//             { xpos,     ypos + h,   0.0f, 0.0f },            
+//             { xpos,     ypos,       0.0f, 1.0f },
+//             { xpos + w, ypos,       1.0f, 1.0f },
+
+//             { xpos,     ypos + h,   0.0f, 0.0f },
+//             { xpos + w, ypos,       1.0f, 1.0f },
+//             { xpos + w, ypos + h,   1.0f, 0.0f }           
+//         };
+//         // render glyph texture over quad
+//         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+//         // update content of VBO memory
+//         glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+//         glBindBuffer(GL_ARRAY_BUFFER, 0);
+//         // render quad
+//         glDrawArrays(GL_TRIANGLES, 0, 6);
+//         // now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+//         x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+//     }
+//     glBindVertexArray(0);
+//     glBindTexture(GL_TEXTURE_2D, 0);
+// }
+
+
+
+
+
+// GLuint initialize(GLuint &vao, GLuint &vbo, GLuint &texture) {
+// 	// Use a Vertex Array Object
+// 	glGenVertexArrays(1, &vao);
+// 	glBindVertexArray(vao);
+
+// 	// 1 square (made by 2 triangles) to be rendered
+// 	GLfloat vertices_position[8] = {
+// 		-1.0, 0.0,
+// 		0.0, 0.0,
+// 		0.0, 1.0,
+// 		-1.0, 1.0,
 				
-	};
+// 	};
 
- 	GLfloat texture_coord[8] = {
+//  	GLfloat texture_coord[8] = {
  		
- 		0.0, 1.0,
- 		1.0, 1.0,
- 		1.0, 0.0,
-		 0.0, 0.0,
-	};
+//  		0.0, 1.0,
+//  		1.0, 1.0,
+//  		1.0, 0.0,
+// 		 0.0, 0.0,
+// 	};
 
 
-	GLuint indices[6] = {
-		0, 1, 2,
-		2, 3, 0
-	};
+// 	GLuint indices[6] = {
+// 		0, 1, 2,
+// 		2, 3, 0
+// 	};
 
-	// Create a Vector Buffer Object that will store the vertices on video memory
-	GLuint vbo;
-	glGenBuffers(1, &vbo);
+// 	// Create a Vector Buffer Object that will store the vertices on video memory
+// 	glGenBuffers(1, &vbo);
 
-	// Allocate space for vertex positions and texture coordinates
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_position) + sizeof(texture_coord), NULL, GL_STATIC_DRAW);
+// 	// Allocate space for vertex positions and texture coordinates
+// 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+// 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_position) + sizeof(texture_coord), NULL, GL_STATIC_DRAW);
 
-	// Transfer the vertex positions:
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices_position), vertices_position);
+// 	// Transfer the vertex positions:
+// 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices_position), vertices_position);
 
-	// Transfer the texture coordinates:
-	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices_position), sizeof(texture_coord), texture_coord);
+// 	// Transfer the texture coordinates:
+// 	glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices_position), sizeof(texture_coord), texture_coord);
 
-	// Create an Element Array Buffer that will store the indices array:
-	GLuint eab;
-	glGenBuffers(1, &eab);
+// 	// Create an Element Array Buffer that will store the indices array:
+// 	GLuint eab;
+// 	glGenBuffers(1, &eab);
 
-	// Transfer the data from indices to eab
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eab);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+// 	// Transfer the data from indices to eab
+// 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eab);
+// 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// Create a texture
-	GLuint texture;
-	glGenTextures(1, &texture);
+// 	// Create a texture
+// 	glGenTextures(1, &texture);
 
-	// Specify that we work with a 2D texture
-	glBindTexture(GL_TEXTURE_2D, texture);
+// 	// Specify that we work with a 2D texture
+// 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	load_image("squirrel.jpg");
+// 	load_image("squirrel.jpg");
 
-	GLuint shaderProgram = create_program("shaders/vert.shader", "shaders/frag.shader");
+// 	GLuint shaderProgram = create_program("shaders/vert.shader", "shaders/frag.shader");
 
-	// Get the location of the attributes that enters in the vertex shader
-	GLint position_attribute = glGetAttribLocation(shaderProgram, "position");
+// 	// Get the location of the attributes that enters in the vertex shader
+// 	GLint position_attribute = glGetAttribLocation(shaderProgram, "position");
 
-	// Specify how the data for position can be accessed
-	glVertexAttribPointer(position_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
+// 	// Specify how the data for position can be accessed
+// 	glVertexAttribPointer(position_attribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-	// Enable the attribute
-	glEnableVertexAttribArray(position_attribute);
+// 	// Enable the attribute
+// 	glEnableVertexAttribArray(position_attribute);
 
-	// Texture coord attribute
-	GLint texture_coord_attribute = glGetAttribLocation(shaderProgram, "texture_coord");
-	glVertexAttribPointer(texture_coord_attribute, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)sizeof(vertices_position));
-	glEnableVertexAttribArray(texture_coord_attribute);
+// 	// Texture coord attribute
+// 	GLint texture_coord_attribute = glGetAttribLocation(shaderProgram, "texture_coord");
+// 	glVertexAttribPointer(texture_coord_attribute, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid *)sizeof(vertices_position));
+// 	glEnableVertexAttribArray(texture_coord_attribute);
 
-}
+//     return shaderProgram;
+// }
 
-void load_image(const char *fname)
-{
-	char 				*image_data_raw = NULL;
-	unsigned char		*image_data = NULL;
-	imebra::DataSet 	loadedDataSet(imebra::CodecFactory::load("data/DICOM_Image_for_Lab_2.dcm"));
-	imebra::Image		image(loadedDataSet.getImage(0));
-	std::uint32_t 		width = image.getWidth();
-	std::uint32_t 		height = image.getHeight();
+// void load_image(const char *fname)
+// {
+// 	char 				*image_data_raw = NULL;
+// 	unsigned char		*image_data = NULL;
+// 	imebra::DataSet 	loadedDataSet(imebra::CodecFactory::load("data/DICOM_Image_for_Lab_2.dcm"));
+// 	imebra::Image		image(loadedDataSet.getImage(0));
+// 	std::uint32_t 		width = image.getWidth();
+// 	std::uint32_t 		height = image.getHeight();
 
-	std::cout << "width: " << width << " height: " << height << std::endl;
-	image_data_raw = new char[width * height];
-	image.getReadingDataHandler().data(image_data_raw, width * height);
+// 	std::cout << "width: " << width << " height: " << height << std::endl;
+// 	image_data_raw = new char[width * height];
+// 	image.getReadingDataHandler().data(image_data_raw, width * height);
 
-	image_data = new unsigned char[width * height * 3];
-	for (size_t i = 0; i < width * height; i++)
-	{
-		image_data[i * 3] = image_data_raw[i];
-		image_data[i * 3 + 1] = image_data_raw[i];
-		image_data[i * 3 + 2] = image_data_raw[i];
-	}
+// 	image_data = new unsigned char[width * height * 3];
+// 	for (size_t i = 0; i < width * height; i++)
+// 	{
+// 		image_data[i * 3] = image_data_raw[i];
+// 		image_data[i * 3 + 1] = image_data_raw[i];
+// 		image_data[i * 3 + 2] = image_data_raw[i];
+// 	}
 	
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, (GLvoid*)image_data);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	delete []image_data_raw;
-	delete []image_data;
-}
+// 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, (GLvoid*)image_data);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// 	delete []image_data_raw;
+// 	delete []image_data;
+// }
 
 
-// Called for keyboard events
-void keyboard(int key, int action) {
-	if(key == 'Q' && action == GLFW_PRESS) {
-		glfwTerminate();
-		exit(0);
+
+
+
+int		main(int argc, char **argv)
+{
+	std::atomic<bool> isRunning;
+	GUI gui;
+
+	isRunning = true;
+	if (gui.initGL() == false)
+		isRunning = false;
+	while (isRunning)
+	{
+		gui.events(isRunning);
+		gui.update();
+		gui.render();
 	}
+
+    return 0;
 }
-
-// Read a shader source from a file
-// store the shader source in a std::vector<char>
-// void read_shader_src(const char *fname, std::vector<char> &buffer) {
-// 	std::ifstream in;
-// 	in.open(fname, std::ios::binary);
-
-// 	if(in.is_open()) {
-// 		// Get the number of bytes stored in this file
-// 		in.seekg(0, std::ios::end);
-// 		size_t length = (size_t)in.tellg();
-
-// 		// Go to start of the file
-// 		in.seekg(0, std::ios::beg);
-
-// 		// Read the content of the file in a buffer
-// 		buffer.resize(length + 1);
-// 		in.read(&buffer[0], length);
-// 		in.close();
-// 		// Add a valid C - string end
-// 		buffer[length] = '\0';
-// 	}
-// 	else {
-// 		std::cerr << "Unable to open " << fname << " I'm out!" << std::endl;
-// 		exit(-1);
-// 	}
-// }
-
-// // Compile a shader
-// GLuint load_and_compile_shader(const char *fname, GLenum shaderType) {
-// 	// Load a shader from an external file
-// 	std::vector<char> buffer;
-// 	read_shader_src(fname, buffer);
-// 	const char *src = &buffer[0];
-
-// 	// Compile the shader
-// 	GLuint shader = glCreateShader(shaderType);
-// 	glShaderSource(shader, 1, &src, NULL);
-// 	glCompileShader(shader);
-// 	// Check the result of the compilation
-// 	GLint test;
-// 	glGetShaderiv(shader, GL_COMPILE_STATUS, &test);
-// 	if(!test) {
-// 		std::cerr << "Shader compilation failed with this message:" << std::endl;
-// 		std::vector<char> compilation_log(512);
-// 		glGetShaderInfoLog(shader, compilation_log.size(), NULL, &compilation_log[0]);
-// 		std::cerr << &compilation_log[0] << std::endl;
-// 		glfwTerminate();
-// 		exit(-1);
-// 	}
-// 	return shader;
-// }
-
-// // Create a program from two shaders
-// GLuint create_program(const char *path_vert_shader, const char *path_frag_shader) {
-// 	// Load and compile the vertex and fragment shaders
-// 	GLuint vertexShader = load_and_compile_shader(path_vert_shader, GL_VERTEX_SHADER);
-// 	GLuint fragmentShader = load_and_compile_shader(path_frag_shader, GL_FRAGMENT_SHADER);
-
-// 	// Attach the above shader to a program
-// 	GLuint shaderProgram = glCreateProgram();
-// 	glAttachShader(shaderProgram, vertexShader);
-// 	glAttachShader(shaderProgram, fragmentShader);
-
-// 	// Flag the shaders for deletion
-// 	glDeleteShader(vertexShader);
-// 	glDeleteShader(fragmentShader);
-
-// 	// Link and use the program
-// 	glLinkProgram(shaderProgram);
-// 	glUseProgram(shaderProgram);
-
-// 	return shaderProgram;
-// }
-
-
-// int		main(int argc, char **argv)
-// {
-// 	std::atomic<bool> isRunning;
-// 	GUI gui;
-
-// 	isRunning = true;
-// 	if (gui.initGL() == false)
-// 		isRunning = false;
-// 	gui.initLines();
-// 	while (isRunning)
-// 	{
-// 		gui.events(isRunning);
-// 		gui.update();
-// 		gui.render();
-// 	}
-
-//     return 0;
-// }
