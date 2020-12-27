@@ -13,7 +13,9 @@ static void glfw_error_callback(int error, const char* description)
 }
 
 
-GUI::GUI(/* args */): clearColor(0.45f, 0.55f, 0.60f, 1.00f), loadedDataSet(imebra::CodecFactory::load("data/DICOM_Image_for_Lab_2.dcm"))
+GUI::GUI(/* args */): clearColor(0.45f, 0.55f, 0.60f, 1.00f)
+                    , loadedDataSet(imebra::CodecFactory::load("data/DICOM_Image_for_Lab_2.dcm"))
+                    , text_renderer(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
 
 }
@@ -120,6 +122,19 @@ bool GUI::initGL()
         return false;
     }
 
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	text_renderer.createShaderProgram("shaders/text.vertex.shader", "shaders/text.fragment.shader");
+	text_renderer.loadFont("fonts/open-sans/OpenSans-Bold.ttf");
+    
+
+    image_renderer.createShaderProgram("shaders/vert.shader", "shaders/frag.shader");
+    image_renderer.loadImage("data/DICOM_Image_for_Lab_2.dcm");
+
+
+
 // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -139,10 +154,6 @@ bool GUI::initGL()
 
     return true;
 }
-
-
-
-
 
 
 
@@ -247,8 +258,6 @@ void	GUI::update()
 
 void	GUI::render()
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, this->my_image_texture);
-    glViewport(0,0,1024,768); // Render on the whole framebuffer, complete from the lower left corner to the upper right  
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -257,6 +266,9 @@ void	GUI::render()
     glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
     // glMatrixMode(GL_PROJECTION)
     glClear(GL_COLOR_BUFFER_BIT);
+    image_renderer.renderImage();
+    text_renderer.renderText("A", 128.0f, 480.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
+    text_renderer.renderText("L", 0.0f, 384.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

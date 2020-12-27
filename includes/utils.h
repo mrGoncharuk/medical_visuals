@@ -17,3 +17,4 @@ void ft_draw_cylindic_line(std::vector<float> &buf);
 void display_smth(GLuint vao, int size);
 void init_texture();
 GLuint create_program(const char *path_vert_shader, const char *path_frag_shader);
+GLuint load_and_compile_shader(const char *fname, GLenum shaderType);

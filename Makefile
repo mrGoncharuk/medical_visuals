@@ -21,7 +21,9 @@ SRC_DIR = src/
 NAME = MedicalVisuals
 SRC = 	main.cpp \
 		GUI.cpp \
-		utils.cpp 
+		utils.cpp \
+		TextRenderer.cpp \
+		ImageRenderer.cpp
 
 
 SOURCES = $(addprefix $(SRC_DIR), $(SRC))

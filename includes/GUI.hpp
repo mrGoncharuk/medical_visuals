@@ -41,6 +41,9 @@ using namespace gl;
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 # include <atomic>
 # include <iostream>
@@ -49,7 +52,8 @@ using namespace gl;
 # include <map>
 # include "utils.h"
 
-
+#include "TextRenderer.hpp"
+#include "ImageRenderer.hpp"
 
 class GUI
 {
@@ -59,6 +63,9 @@ private:
 	GLuint 				my_image_texture;
 	imebra::DataSet 	loadedDataSet;
 	std::map<GLuint, size_t> lines;
+	TextRenderer		text_renderer;
+	ImageRenderer		image_renderer;
+
 public:
 	GUI();
 	~GUI();
