@@ -50,7 +50,9 @@ using namespace gl;
 # include <imebra/imebra.h>
 # include <stdio.h>
 # include <map>
-# include "utils.h"
+# include <fstream>
+
+# include "utils.hpp"
 
 #include "TextRenderer.hpp"
 #include "ImageRenderer.hpp"
@@ -65,6 +67,7 @@ private:
 	std::map<GLuint, size_t> lines;
 	TextRenderer		text_renderer;
 	ImageRenderer		image_renderer;
+	char				orient_abbr[6];
 
 public:
 	GUI();
@@ -79,7 +82,7 @@ public:
 	void			events(std::atomic<bool>&);
 	void			update();
 	void			render();
-	void    		initLines();
+	void			read_orientation();
 
 
 	

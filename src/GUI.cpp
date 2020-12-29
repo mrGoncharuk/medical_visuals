@@ -1,9 +1,5 @@
 #include "GUI.hpp"
-#include <mutex>
-#include <iostream>
 
-#include <fstream>
-#include <iostream>
 using namespace std;
 
 
@@ -14,7 +10,7 @@ static void glfw_error_callback(int error, const char* description)
 
 
 GUI::GUI(/* args */): clearColor(0.45f, 0.55f, 0.60f, 1.00f)
-                    , loadedDataSet(imebra::CodecFactory::load("data/DICOM_Image_for_Lab_2.dcm"))
+                    , loadedDataSet(imebra::CodecFactory::load("data/copy_of_DICOM_Image_for_Lab_2.dcm"))
                     , text_renderer(SCREEN_WIDTH, SCREEN_HEIGHT)
 {
 
@@ -32,33 +28,68 @@ GUI::~GUI()
     glfwTerminate();
 }
 
-void    GUI::initLines()
+
+void	GUI::read_orientation()
 {
-    		// The fullscreen quad's FBO
-	// GLuint quad_VertexArrayID;
-	// glGenVertexArrays(1, &quad_VertexArrayID);
-	// glBindVertexArray(quad_VertexArrayID);
+    float tmp;
+    for (size_t i = 0; i < 6; i++)
+    {
 
-	// static const GLfloat g_quad_vertex_buffer_data[] = {
-	// 	-1.0f, -1.0f, 0.0f,
-	// 	1.0f, -1.0f, 0.0f,
-	// 	-1.0f,  1.0f, 0.0f,
-	// 	-1.0f,  1.0f, 0.0f,
-	// 	1.0f, -1.0f, 0.0f,
-	// 	1.0f,  1.0f, 0.0f,
-	// };
+        std::cout << loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), i) << std::endl;
+    }
 
-	// GLuint quad_vertexbuffer;
-	// glGenBuffers(1, &quad_vertexbuffer);
-	// glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-	// glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 0);
+    if (tmp == 0)
+        this->orient_abbr[0] = ' ';
+    else if (tmp > cos(45))
+        this->orient_abbr[0] = 'L';
+    else
+        this->orient_abbr[0] = 'R';
+    
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 1);
+    if (tmp == 0)
+        this->orient_abbr[1] = ' ';
+    else if (tmp > cos(45))
+        this->orient_abbr[1] = 'A';
+    else
+        this->orient_abbr[1] = 'P';
 
-	// // Create and compile our GLSL program from the shaders
-	// GLuint quad_programID = create_program( "shaders/passthrough.vert.shader", "shaders/texture.frag.shader" );
-	// GLuint texID = glGetUniformLocation(quad_programID, "renderedTexture");
-	// GLuint timeID = glGetUniformLocation(quad_programID, "time");
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 2);
+    if (tmp == 0)
+        this->orient_abbr[2] = ' ';
+    else if (tmp > cos(45))
+        this->orient_abbr[2] = 'H';
+    else
+        this->orient_abbr[2] = 'F';
+    
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 3);
+    if (tmp == 0)
+        this->orient_abbr[3] = ' ';
+    else if (tmp > cos(45))
+        this->orient_abbr[3] = 'L';
+    else
+        this->orient_abbr[3] = 'R';
+
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 4);    
+    if (tmp == 0)
+        this->orient_abbr[4] = ' ';
+    else if (tmp > cos(45))
+        this->orient_abbr[4] = 'A';
+    else
+        this->orient_abbr[4] = 'P';
+
+    tmp = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 5);
+    if (tmp == 0)
+        this->orient_abbr[5] = ' ';
+    else if (tmp < cos(45))
+        this->orient_abbr[5] = 'H';
+    else
+        this->orient_abbr[5] = 'F';
+
+    for (int i = 0; i < 6; i++)
+        std::cout << this->orient_abbr[i];
+    std::cout << std::endl;
 }
-
 
 
 bool GUI::initGL()
@@ -131,8 +162,9 @@ bool GUI::initGL()
     
 
     image_renderer.createShaderProgram("shaders/vert.shader", "shaders/frag.shader");
-    image_renderer.loadImage("data/DICOM_Image_for_Lab_2.dcm");
+    image_renderer.loadImage("data/copy_of_DICOM_Image_for_Lab_2.dcm");
 
+    this->read_orientation();
 
 
 // Setup Dear ImGui context
@@ -150,8 +182,6 @@ bool GUI::initGL()
     ImGui_ImplGlfw_InitForOpenGL(this->window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-
-
     return true;
 }
 
@@ -164,46 +194,6 @@ void    GUI::events(std::atomic<bool> &isRunning)
         isRunning = false;
 
 }
-
-bool LoadTextureFromArray(char *pixels, GLuint* out_texture, int image_width, int image_height)
-{
-    GLuint FramebufferName = 0;
-    glGenFramebuffers(1, &FramebufferName);
-    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-    *out_texture = FramebufferName;
-
-    // The texture we're going to render to
-    GLuint image_texture;
-    glGenTextures(1, &image_texture);
-
-    // "Bind" the newly created texture : all future texture functions will modify this texture
-    glBindTexture(GL_TEXTURE_2D, image_texture);
-
-    // Give an empty image to OpenGL ( the last "0" )
-    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1024, 768, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-    // Poor filtering. Needed !
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    GLuint depthrenderbuffer;
-    glGenRenderbuffers(1, &depthrenderbuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-    // Set "renderedTexture" as our colour attachement #0
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, image_texture, 0);
-
-    // Set the list of draw buffers.
-    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-    glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
-    
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        return false;
-    return true;
-}
-
 
 void	GUI::update()
 {
@@ -219,18 +209,42 @@ void	GUI::update()
     //     ImGui::ShowDemoWindow(&show_demo_window);
 
 
+
     {
-        static int x1 = 50, x2 = 500, y1 = 50, y2 = 500;
+
         ImGui::Begin("Plotter");
-        ImGui::Text("Window Width = %d", SCREEN_WIDTH);
-        ImGui::Text("Window Height = %d", SCREEN_HEIGHT);
-        ImGui::InputInt("x1", &x1);
-        ImGui::InputInt("y1", &y1);
-        ImGui::InputInt("x2", &x2);
-        ImGui::InputInt("y2", &y2);
+
         ImVec2 pos = ImGui::GetMousePos();
-        ImGui::Text("x = %f", pos.x);
-        ImGui::Text("y = %f", pos.y);
+        ImVec2 pos_centered(pos.x - SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - pos.y);
+
+        ImGui::Text("x = %f", pos_centered.x);
+        ImGui::Text("y = %f", pos_centered.y);
+
+
+        if (pos.x < SCREEN_WIDTH / 2 && pos.x > 0
+         && pos.y < SCREEN_WIDTH / 2 && pos.y > 0)
+        {
+            float x, y, z;
+            float spacing = 
+
+            x = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 0) + 
+                loadedDataSet.getFloat(imebra::TagId(0x0028, 0x0030), 0) * loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 0) * (pos.x - SCREEN_WIDTH / 4) +
+                loadedDataSet.getFloat(imebra::TagId(0x0028, 0x0030), 1) * loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 3) * (SCREEN_HEIGHT / 4 - pos.y);
+
+            y = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 1) + 
+                loadedDataSet.getFloat(imebra::TagId(0x0028, 0x0030), 0) * loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 4) * (SCREEN_HEIGHT / 4 - pos.y) +
+                loadedDataSet.getFloat(imebra::TagId(0x0028, 0x0030), 1) * loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 1) * (pos.x - SCREEN_WIDTH / 4);
+                // loadedDataSet.getFloat(imebra::TagId(0x0028, 0x0030), 0) * loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 0);
+            
+            z = loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 2) + 
+                loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 2) * (pos.x - SCREEN_WIDTH / 4) / loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 2) +
+                loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0037), 5) * (SCREEN_HEIGHT / 4 - pos.y) / loadedDataSet.getFloat(imebra::TagId(0x0020, 0x0032), 2);
+            
+            ImGui::Text("Image.x = %f", x);
+            ImGui::Text("Image.y = %f", y );
+            ImGui::Text("Image.z = %f", z );
+        }
+
         // ImGui::Image((void*)(intptr_t)this->my_image_texture, ImVec2(500, 500));
         ImGui::End();
     }
@@ -239,25 +253,13 @@ void	GUI::update()
     static bool isProcessed = false;
     static char *image_data = NULL;
 
-    // if (!isProcessed)
-    // {
-
-    //     std::uint32_t width = image.getWidth();
-    //     std::uint32_t height = image.getHeight();
-    //     image_data = new char[width * height];
-    //     image.getReadingDataHandler().data(image_data, width * height);
-    //     if (isProcessed = LoadTextureFromArray(image_data, &this->my_image_texture, width, height))
-    //         std::cout << "Result: " << isProcessed << std::endl;
-    //     delete []image_data;
-    // }
-    
-
 }
 
 
 
 void	GUI::render()
 {
+    static char buf[3];
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -267,8 +269,14 @@ void	GUI::render()
     // glMatrixMode(GL_PROJECTION)
     glClear(GL_COLOR_BUFFER_BIT);
     image_renderer.renderImage();
-    text_renderer.renderText("A", 128.0f, 480.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
-    text_renderer.renderText("L", 0.0f, 384.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
+    
+
+    strncpy(buf, this->orient_abbr + 4, 2);
+    buf[2] = '\0';
+    text_renderer.renderText(buf, 128.0f, 480.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
+    strncpy(buf, this->orient_abbr, 2);
+    buf[2] = '\0';
+    text_renderer.renderText(buf, 0.0f, 384.0f, 0.5f, glm::vec3(1.0f, 0.0f, 0.0f));
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

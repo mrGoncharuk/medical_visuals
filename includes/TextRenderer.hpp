@@ -14,7 +14,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "utils.h"
+#include "utils.hpp"
 
 
 /// Holds all state information relevant to a character as loaded using FreeType
